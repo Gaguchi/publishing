@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Upload Image</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <select id="section" name="section">
+            <option value="section1">Section 1</option>
+            <option value="section2">Section 2</option>
+        </select>
+        <input type="file" id="image" name="image" accept="image/*">
+        <button type="submit">Upload</button>
+    </form>
+    <div id="uploadedImages">
+        <div id="section1">
+            <h2>Section 1</h2>
+            <img id="section1Image" src="" width="200" style="display:none;">
+        </div>
+        <div id="section2">
+            <h2>Section 2</h2>
+            <img id="section2Image" src="" width="200" style="display:none;">
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Load existing images
+            $.ajax({
+                url: 'http://127.0.0.1:8000/api/images/',
+                type: 'GET',
+                success: function(data) {
+                    data.forEach(function(image) {
+                        $('#'+image.section+'Image').attr('src', 'http://127.0.0.1:8000/' + image.image).show();
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to load images:', error);
+                }
+            });
+
+            // Handle form submission
+            $('#uploadForm').on('submit', function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/upload/',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                        var section = $('#section').val();
+                        $('#'+section+'Image').attr('src', 'http://127.0.0.1:8000/' + data.image).show();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Upload failed:', error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
